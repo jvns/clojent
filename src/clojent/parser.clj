@@ -4,8 +4,11 @@
     "d8:announce40:http://tracker.thepiratebay.org/announce13:announce-list5:blahe")
 
 
-(defn bdecode [s]
-  (parse-value s))
+(declare parse-list)
+(declare parse-dict)
+(declare parse-bytes)
+(declare parse-int)
+(declare bdecode)
 
 ; Returns
 ; - a list of byte strings
@@ -31,7 +34,6 @@
         }
     ))
 
-(declare parse-list)
 
 (defn parse-value [s]
     (let [fst (first s)
@@ -58,6 +60,9 @@
      :rest (:rest list-vals)
      }))
 
+(defn bdecode [s]
+  (parse-value s))
+
 (parse-int "10ei20e")
 
 (parse-list "i10ei10ei150ee")
@@ -68,10 +73,9 @@
 
 (parse-bytes (:rest (parse-bytes "3:abc4:abcde")))
 
-(parse-value ( :rest (parse-value "i10ei20ee") ))
+(parse-value (:rest (parse-value "i10ei20ee")))
 
 (parse-value "d3:abc4:abcde")
-
 
 
 '(
