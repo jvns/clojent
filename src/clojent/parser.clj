@@ -3,30 +3,24 @@
 (def test-str
     "d8:announce40:http://tracker.thepiratebay.org/announce13:announce-list5:blahe")
 
-(defn end-char? [c] (not= c \e))
 
 (defn bdecode [s]
-    2)
-
-(defn parse-dict [s]
-    (print "dict")
-    3
-    )
+  (parse-value s))
 
 ; Returns
 ; - a list of byte strings
 ; - the remainder of the string
 (defn parse-bytes [s]
-    (print "bytes")
     (let [parts (split-with #(not= \: %) s)
           ntoread (->> parts first (apply str) read-string)
           secondpart (->> parts second (drop 1))
           bytestr (take ntoread secondpart)
           rst (drop ntoread secondpart)
         ]
-        {:val bytestr :rest rst}
+        {:val (apply str bytestr) :rest rst}
     ))
 
+(defn end-char? [c] (not= c \e))
 (defn parse-int [s]
     (let [parts (split-with end-char? s)]
         {
@@ -41,7 +35,7 @@
 
 (defn parse-value [s]
     (let [fst (first s)
-          rst (subs s 1)]
+          rst (rest s)]
         (case fst
             \i (parse-int rst)
             \l (parse-list rst)
@@ -58,17 +52,27 @@
         :rest (:rest othervals)
        })))
 
+(defn parse-dict [s]
+  (let [list-vals (parse-list s)]
+    {:val (apply hash-map (:val list-vals))
+     :rest (:rest list-vals)
+     }))
+
 (parse-int "10ei20e")
 
 (parse-list "i10ei10ei150ee")
 
+(parse-list "3:abc4:abcde")
+
+(parse-bytes "3:abc4:abcd")
+
+(parse-bytes (:rest (parse-bytes "3:abc4:abcde")))
+
 (parse-value ( :rest (parse-value "i10ei20ee") ))
 
-(loop [s "i10ei20ee"]
-  (if (< (count s) 2)
-    s
-    (let [result parse-value s])
-    (recur (- x 1))))
+(parse-value "d3:abc4:abcde")
+
+
 
 '(
 (assert (=
