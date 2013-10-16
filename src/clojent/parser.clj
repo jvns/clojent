@@ -1,4 +1,6 @@
-(def test-str 
+(ns clojent.parser)
+
+(def test-str
     "d8:announce40:http://tracker.thepiratebay.org/announce13:announce-list5:blahe")
 
 (defn end-char? [c] (not= c \e))
@@ -25,44 +27,59 @@
         {:val bytestr :rest rst}
     ))
 
-(defn parse-list [s]
-    (print "list")
-    (loop [remaining s values []]
-        (println remaining)
-        (if (= (first remaining) \e)
-            {:val values :rest (rest remaining)}
-            (let [result (parse-value s)
-                  value (:val result)] 
-                  (recur (:rest result) (concat values [value]))))))
-
 (defn parse-int [s]
     (let [parts (split-with end-char? s)]
         {
-            :val 
+            :val
             (->> parts first (apply str) read-string)
-            :rest 
+            :rest
             (->> parts second (drop 1) (apply str))
         }
     ))
 
+(declare parse-list)
+
 (defn parse-value [s]
     (let [fst (first s)
           rst (subs s 1)]
-        (case fst 
+        (case fst
             \i (parse-int rst)
             \l (parse-list rst)
             \d (parse-dict rst)
             (parse-bytes s)
         )))
 
-(assert (= 
+(defn parse-list [s]
+  (if (= (first s) \e)
+    {:val [] :rest (rest s)}
+    (let [fstval (parse-value s)
+          othervals (parse-list (:rest fstval))]
+      { :val (cons (:val fstval) (:val othervals))
+        :rest (:rest othervals)
+       })))
+
+(parse-int "10ei20e")
+
+(parse-list "i10ei10ei150ee")
+
+(parse-value ( :rest (parse-value "i10ei20ee") ))
+
+(loop [s "i10ei20ee"]
+  (if (< (count s) 2)
+    s
+    (let [result parse-value s])
+    (recur (- x 1))))
+
+'(
+(assert (=
     (parse-int "10ei20e")
     {:val 10 :rest "i20e"}))
 
-(assert (= 
+(assert (=
     (parse-value "i10ei20e")
     {:val 10 :rest "i20e"}))
 
-(assert (= 
+(assert (=
     (parse-list "li10ei20e")
     {:val [10,20] :rest ""}))
+)
