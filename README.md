@@ -1,14 +1,6 @@
 # clojent
 
-A Clojure library designed to ... well, that part is up to you.
 
-## Usage
+The idea here was to write a BitTorrent client in Clojure. That never happened. 
 
-FIXME
-
-## License
-
-Copyright © 2013 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+There are the beginnings of a torrent file parser here.
